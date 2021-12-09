@@ -57,30 +57,27 @@ def get_outstanding_lease(reference, year, month, day):
         datestring = datetime.datetime(year=int(year),month=int(month),day=int(day))
     except ValueError:
         abort(422, description="Given Date doesn't Exists")
-    # conn = getconnection()
-    # cursor = conn.cursor()
-    # # check if reference exists
-    # try:
-    #     cursor.execute("SELECT installment_no  FROM lease WHERE reference = '{0}' group by 1;".format(reference))
-    # except Exception as e:
-    #     print(e)
-    #     abort(500, description="Internal Server Error")
-    # if cursor.fetchone() == None:
-    #     abort(422, description="installment_no doesn't Exists")
-    # # check if before start of installment
-    #     # check if reference exists
-    # # cursor.execute("SELECT installment_no  FROM lease WHERE reference = '{0}';".format(reference))
-    # try:
-    #     cursor.execute("select row_to_json(outst) from ( SELECT CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding from installment where date <= '{0}' AND installment_no in (SELECT installment_no  FROM lease WHERE reference = '{1}') ORDER BY date DESC LIMIT 1) outst;".format(datestring, reference))
-    # except Exception as e:
-    #     print(e)
-    #     abort(500, description="Internal Server Error")
-    # row = cursor.fetchone()
-    # if row == None:
-    #     abort(422, description="installment starts later")
-    # cursor.close()
-    # conn.close()
-    return jsonify(status=200, mimetype='application/json', date=datestring)
-    # return jsonify(status=200, mimetype='application/json', reference=reference, year=year, month=month, day=day, data=row)
+    conn = getconnection()
+    cursor = conn.cursor()
+    # check if reference exists
+    try:
+        cursor.execute("SELECT installment_no  FROM lease WHERE reference = '{0}' group by 1;".format(reference))
+    except Exception as e:
+        print(e)
+        abort(500, description="Internal Server Error")
+    if cursor.fetchone() == None:
+        abort(422, description="installment_no doesn't Exists")
+    try:
+        cursor.execute("select row_to_json(outst) from ( SELECT CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding from installment where date <= '{0}' AND installment_no in (SELECT installment_no  FROM lease WHERE reference = '{1}') ORDER BY date DESC LIMIT 1) outst;".format(datestring, reference))
+    except Exception as e:
+        print(e)
+        abort(500, description="Internal Server Error")
+    row = cursor.fetchone()
+    if row == None:
+        abort(422, description="installment starts later")
+    cursor.close()
+    conn.close()
+    # return jsonify(status=200, mimetype='application/json')
+    return jsonify(status=200, mimetype='application/json', reference=reference, year=year, month=month, day=day, data=row)
 
 
