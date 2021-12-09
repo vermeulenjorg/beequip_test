@@ -57,8 +57,8 @@ def get_outstanding_lease(reference, year, month, day):
         datestring = datetime.datetime(year=int(year),month=int(month),day=int(day))
     except ValueError:
         abort(422, description="Given Date doesn't Exists")
-    # conn = getconnection()
-    # cursor = conn.cursor()
+    conn = getconnection()
+    cursor = conn.cursor()
     # # check if reference exists
     # try:
     #     cursor.execute("SELECT installment_no  FROM lease WHERE reference = '{0}' group by 1;".format(reference))
