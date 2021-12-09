@@ -2,6 +2,7 @@ atomicwrites==1.4.0
 attrs==21.2.0
 click==8.0.3
 colorama==0.4.4
+coverage==6.2
 Flask==2.0.2
 iniconfig==1.1.1
 itsdangerous==2.0.1
@@ -13,5 +14,7 @@ psycopg2==2.9.2
 py==1.11.0
 pyparsing==3.0.6
 pytest==6.2.5
+pytest-cov==3.0.0
 toml==0.10.2
+tomli==1.2.2
 Werkzeug==2.0.2
