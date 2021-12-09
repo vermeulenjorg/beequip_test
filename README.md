@@ -10,8 +10,26 @@ The first step was to understand and translate all functional and non functional
 
 1. Application needs to be backed by a SQL server and explain your db server choice
    - I have chosen a PostgreSQL databases hosted on Microsoft Azure. I chose this type of server because i have heard it was already being used at Beequip. For this small test database PostgreSQL can handle all requirements. I chose to host this database on Azure because i already have a private account there.  
+   - The design of the environement is documented
+   
+   ![Azure Environement](docs/20211207_Azure_Cloud_Beequip.png)  
+   
+
 2. Use the data in the `data/` directory to create the database schema and records and explain how you did this
-   - TODO: By running the create.py file in create_database
+   - First inspect and design the database schema needed for this application
+   
+   ![Entity Relationship](docs/20211209 Entity Relationship.png)    
+   
+   - Create a database called beequip_test and assing a general_user to be a super user on this database. This user is used for all purposes needed in this project which is unsecure but only for this purpose.
+   ```
+   CREATE DATABASE beequip_test;
+   CREATE ROLE general_user WITH LOGIN NOSUPERUSER INHERIT CREATEDB NOCREATEROLE NOREPLICATION PASSWORD 'xBP<`gR/2TV2BF)*';
+   GRANT CONNECT ON DATABASE beequip_test TO general_user;
+   GRANT ALL PRIVILEGES ON DATABASE beequip_test TO general_user;
+   ```
+   - To connect to this database all needed information in stored in the init.py file under database (unsecure). If you want to connect to your own database these values need to be adjusted accordingly. I specificly did not use environnement variables for this case only.
+   - To fill all tables with the data in the .csv files i build the create.py file in create_database which is runnable in a python environnement. This reads all files and builds the needed tables according to the given shemas. All tables have their own hardcoded shema so that this is always consistent and well thought out. 
+   
 3. Respond to the API requests in JSON
    - TODO: By using Flask and JSON
 4. No API authentication is required
