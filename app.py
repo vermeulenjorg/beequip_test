@@ -84,13 +84,3 @@ def get_outstanding_lease(reference, year, month, day):
     # return jsonify(status=200, mimetype='application/json', reference=reference, year=year, month=month, day=day, data=row)
 
 
-#
-# TODO
-# What's the total outstanding for a organisation given a Camber of Commerce number and date?
-# TODO
-# What's the total outstanding per team and lane given a date?
-# TODO
-# What's the average outstanding at the start of the lease per team and lane?
-# TODO
-# What's the total daily outstanding given a year?
-# TODO
