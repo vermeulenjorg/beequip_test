@@ -99,7 +99,7 @@ def create_installment():
     data = readfile(file)
     for item in data:
         item.insert(0, str(item[0]) +  str(item[1]))
-    columns_to_create = {'id': 'VARCHAR(255) PRIMARY KEY', 'installment_nu': 'CHAR(8)', 't': 'integer', 'date': 'timestamp', 'installment': 'float', 'principal': 'float', 'interest': 'float', 'outstanding_start': 'float'}
+    columns_to_create = {'id': 'VARCHAR(255) PRIMARY KEY', 'installment_no': 'CHAR(8)', 't': 'integer', 'date': 'timestamp', 'installment': 'float', 'principal': 'float', 'interest': 'float', 'outstanding': 'float'}
     build_table(table=table, columns_to_create=columns_to_create)
     load_data(table=table, data=data, columns=columns_to_create)
 
