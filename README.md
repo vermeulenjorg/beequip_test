@@ -18,7 +18,7 @@ The first step was to understand and translate all functional and non functional
 2. Use the data in the `data/` directory to create the database schema and records and explain how you did this
    - First inspect and design the database schema needed for this application
    
-   ![Entity Relationship](docs/20211209 Entity Relationship.png)    
+   ![Entity Relationship](docs/20211209_Entity_Relationship.png)    
    
    - Create a database called beequip_test and assing a general_user to be a super user on this database. This user is used for all purposes needed in this project which is unsecure but only for this purpose.
    ```
@@ -38,7 +38,22 @@ The first step was to understand and translate all functional and non functional
 ### Functional requirements
 
 1. What's the outstanding for a lease given a reference and date?
-   - TODO
+   - The endpoint for the final url is:
+     ```
+     /api/v1/lease/<reference>/<year>/<month>/<day>
+     ```
+   - reference is the reference of the lease
+   - year is the year of the outstanding lease
+   - month is the month of the outstanding lease  
+   - day is the day of the outstanding lease
+   - The function checks the given input on validity, then fetches the first previous data row. It calculates the remaining Lease and returns this value under data and also corrects if the lease has ended and a negative balance remains. It also returns the input, status and mimetype for reference and validation. 
+   - Example response:
+     ```
+     {"data":[{"outstanding":13326.42}],"day":"31","mimetype":"application/json","month":"12","reference":"BQ2333.20132.01","status":200,"year":"2021"}
+     ```
+
+     
+          
 2. What's the total outstanding for a organisation given a Camber of Commerce number and date?
    - TODO
 3. What's the total outstanding per team and lane given a date?
