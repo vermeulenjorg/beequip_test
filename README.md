@@ -96,50 +96,98 @@ The first step was to understand and translate all functional and non functional
 
 3. What's the total outstanding per team and lane given a date?
 - The endpoint for the final url is:
-     ```
+    ```
      /api/v1/team/current
-     ```
+    ```
    - It calculates the remaining Lease per team and lane and returns these values in a nested json. It has no sanity check wheter the calculated value is similar to the given value (for eq in the case of rouding issues)
    - Example response:
-     ```
-     "data": {
-        "teams": [
-            [
-                "logistics",
-                115406.29999999999,
+    
+  ```
+    {
+        "data": {
+            "teams": [
                 [
                     {
-                        "lane": "beespecial",
-                        "sum": 115406.3,
-                        "team": "logistics"
+                        "lanes": [
+                            {
+                                "lane": "beespecial",
+                                "total_outstanding": 115406.3
+                            }
+                        ],
+                        "team": "logistics",
+                        "total_outstanding": 115406.29999999999
+                    }
+                ],
+                [
+                    {
+                        "lanes": [
+                            {
+                                "lane": "beefast",
+                                "total_outstanding": 73119.64
+                            },
+                            {
+                                "lane": "beespecial",
+                                "total_outstanding": 23907.79
+                            }
+                        ],
+                        "team": "yellow",
+                        "total_outstanding": 97027.43
                     }
                 ]
-            ],
-            [
-                "yellow",
-                97027.43,
+            ]
+        },
+        "mimetype": "application/json",
+        "status": 200
+    }
+  ```
+
+4. What's the average outstanding at the start of the lease per team and lane?
+- The endpoint for the final url is:
+    ```
+     /api/v1/team/start
+    ```
+   - It calculates the average Lease per team and lane at the start when no payments have been received and returns these values in a nested json.
+   - Example response:
+  ```
+    {
+        "data": {
+            "teams": [
                 [
                     {
-                        "lane": "beefast",
-                        "sum": 73119.64,
-                        "team": "yellow"
-                    },
+                        "avg_outstanding": 57616.05,
+                        "lanes": [
+                            {
+                                "avg_outstanding": 57616.05,
+                                "lane": "beespecial"
+                            }
+                        ],
+                        "team": "logistics"
+                    }
+                ],
+                [
                     {
-                        "lane": "beespecial",
-                        "sum": 23907.79,
+                        "avg_outstanding": 215243.5475,
+                        "lanes": [
+                            {
+                                "avg_outstanding": 216084.095,
+                                "lane": "beefast"
+                            },
+                            {
+                                "avg_outstanding": 214403,
+                                "lane": "beespecial"
+                            }
+                        ],
                         "team": "yellow"
                     }
                 ]
             ]
-        ]
-      },
-      "mimetype": "application/json",
-      "status": 200
-      }
-     ```
+        },
+        "mimetype": "application/json",
+        "status": 200
+    }
+  ```
 
-4. What's the average outstanding at the start of the lease per team and lane?
-   - TODO
+
 5. What's the total daily outstanding given a year?
    - TODO    
 
