@@ -156,7 +156,7 @@ def get_total_organisational_outstanding_lease(coc_number, year, month, day):
 
     return jsonify(status=200, mimetype='application/json', coc_number=coc_number, year=year, month=month, day=day, data=row)
 
-@app.route("/api/v1/team")
+@app.route("/api/v1/team/current")
 def get_total_outstanding_per_team_and_lane():
     """
     This API is a reference to FR-3: What's the total outstanding per team and lane given a date?
@@ -167,19 +167,56 @@ def get_total_outstanding_per_team_and_lane():
         conn = getconnection()
         cursor = conn.cursor()
         cursor.execute(
-                       "SELECT team, SUM(outstanding), (SELECT json_agg(lane_sum) FROM (SELECT team, lane, SUM(outstanding) "
+                       "select row_to_json(outst) from ( SELECT team, SUM(outstanding)  as total_outstanding , (SELECT json_agg(lane_sum) FROM (SELECT lane, total_outstanding FROM ( SELECT team, lane, SUM(outstanding) as total_outstanding "
                        "FROM lease let "
                        "LEFT JOIN (select ins.installment_no, CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding "
                        "from installment ins INNER JOIN (SELECT installment_no, max(t) as t "
                        "FROM installment WHERE date <= '{0}' GROUP BY 1) maxi "
                        "ON maxi.installment_no = ins.installment_no AND maxi.t=ins.t) outs "
-                       "ON outs.installment_no = let.installment_no where le.team=team GROUP BY 1,2) as lane_sum) AS Lanes "
+                       "ON outs.installment_no = let.installment_no where le.team=team GROUP BY 1,2) as a) as lane_sum) AS Lanes "
                        "FROM lease le "
                        "LEFT JOIN (select ins.installment_no, CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding "
                        "from installment ins INNER JOIN (SELECT installment_no, max(t) as t "
                        "FROM installment WHERE date <= '{0}' GROUP BY 1) maxi "
                        "ON maxi.installment_no = ins.installment_no AND maxi.t=ins.t) outs "
-                       "ON outs.installment_no = le.installment_no GROUP BY 1 ;".format(datetime.datetime.now()))
+                       "ON outs.installment_no = le.installment_no GROUP BY 1) outst;".format(datetime.datetime.now()))
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        if rows == None:
+            abort(422, description="installment starts later")
+    except Exception as e:
+        print(e)
+        abort(500, description="Internal Server Error")
+    print(rows)
+    return jsonify(status=200, mimetype='application/json', data={'teams': rows})
+
+
+@app.route("/api/v1/team/start")
+def get_average_at_start_per_team_and_lane():
+    """
+    This API is a reference to FR-3: What's the total outstanding per team and lane given a date?
+    I used SQL as much as possible for this case. And not reuse any statement to get data.
+    :return: outstandings per team and lane
+    """
+    try:
+        conn = getconnection()
+        cursor = conn.cursor()
+        cursor.execute(
+                       "select row_to_json(outst) from (SELECT team, AVG(outstanding) as avg_outstanding, (SELECT json_agg(lane_sum) FROM (SELECT lane,avg_outstanding FROM ("
+                       "SELECT team, lane, AVG(outstanding) AS avg_outstanding "
+                       "FROM lease let "
+                       "LEFT JOIN (select ins.installment_no, outstanding "
+                       "from installment ins INNER JOIN (SELECT installment_no, min(t) as t "
+                       "FROM installment GROUP BY 1) mini "
+                       "ON mini.installment_no = ins.installment_no AND mini.t=ins.t) outs "
+                       "ON outs.installment_no = let.installment_no where le.team=team GROUP BY 1,2) as a) as lane_sum) AS Lanes "
+                       "FROM lease le "
+                       "LEFT JOIN (select ins.installment_no, outstanding "
+                       "from installment ins INNER JOIN (SELECT installment_no, min(t) as t "
+                       "FROM installment GROUP BY 1) mini "
+                       "ON mini.installment_no = ins.installment_no AND mini.t=ins.t) outs "
+                       "ON outs.installment_no = le.installment_no GROUP BY 1 ) outst;")
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
