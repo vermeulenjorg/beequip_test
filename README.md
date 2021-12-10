@@ -95,7 +95,49 @@ The first step was to understand and translate all functional and non functional
      
 
 3. What's the total outstanding per team and lane given a date?
-   - TODO
+- The endpoint for the final url is:
+     ```
+     /api/v1/team
+     ```
+   - It calculates the remaining Lease per team and lane and returns these values in a nested json. It has no sanity check wheter the calculated value is similar to the given value (for eq in the case of rouding issues)
+   - Example response:
+     ```
+     "data": {
+        "teams": [
+            [
+                "logistics",
+                115406.29999999999,
+                [
+                    {
+                        "lane": "beespecial",
+                        "sum": 115406.3,
+                        "team": "logistics"
+                    }
+                ]
+            ],
+            [
+                "yellow",
+                97027.43,
+                [
+                    {
+                        "lane": "beefast",
+                        "sum": 73119.64,
+                        "team": "yellow"
+                    },
+                    {
+                        "lane": "beespecial",
+                        "sum": 23907.79,
+                        "team": "yellow"
+                    }
+                ]
+            ]
+        ]
+      },
+      "mimetype": "application/json",
+      "status": 200
+      }
+     ```
+
 4. What's the average outstanding at the start of the lease per team and lane?
    - TODO
 5. What's the total daily outstanding given a year?
