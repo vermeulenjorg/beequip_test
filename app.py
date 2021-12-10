@@ -90,7 +90,7 @@ def health_check():
 def get_outstanding_lease(reference, year, month, day):
     """
     This API is a reference to FR-1: What's the outstanding for a lease given a reference and date?
-    I used SQL as much as possible for this case.
+    I used SQL as much as possible for this case. And not reuse any statement to get data.
     :param reference: The lease Reference
     :param year: The Year for the outstanding Lease
     :param month: The Month for the outstanding Lease
@@ -122,7 +122,7 @@ def get_outstanding_lease(reference, year, month, day):
 def get_total_organisational_outstanding_lease(coc_number, year, month, day):
     """
     This API is a reference to FR-2: What's the total outstanding for a organisation given a Camber of Commerce number and date?
-    I used SQL as much as possible for this case.
+    I used SQL as much as possible for this case. And not reuse any statement to get data.
     :param coc_number: the chamber of commerce number
     :param year: The Year for the total outstanding Lease
     :param month: The Month for the total outstanding Lease
