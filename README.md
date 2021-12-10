@@ -49,17 +49,145 @@ The first step was to understand and translate all functional and non functional
    - The function checks the given input on validity, then fetches the first previous data row. It calculates the remaining Lease and returns this value under data and also corrects if the lease has ended and a negative balance remains. It also returns the input, status and mimetype for reference and validation. 
    - Example response:
      ```
-     {"data":[{"outstanding":13326.42}],"day":"31","mimetype":"application/json","month":"12","reference":"BQ2333.20132.01","status":200,"year":"2021"}
+     {
+      "data": [
+        {
+            "outstanding": 13326.42
+        }
+      ],
+      "day": "31",
+      "mimetype": "application/json",
+      "month": "12",
+      "reference": "BQ2333.20132.01",
+      "status": 200,
+      "year": "2021"
+      }
      ```
-
-     
           
 2. What's the total outstanding for a organisation given a Camber of Commerce number and date?
-   - TODO
+   - The endpoint for the final url is:
+     ```
+     /api/v1/organisation/<coc_number>/<year>/<month>/<day>
+     ```
+   - coc_number is the chamber of commerce number
+   - year is the year of the outstanding lease
+   - month is the month of the outstanding lease  
+   - day is the day of the outstanding lease
+   - The function checks the given input on validity, then fetches the first previous data rows for all leases associated with the customer. It calculates the remaining Lease and returns the sum of this value under data and also corrects if the lease has ended and a negative balance remains. It also returns the input, status and mimetype for reference and validation. 
+   - Example response:
+     ```
+     {
+      "coc_number": "68648456",
+      "data": [
+        [
+            {
+                "total_outstanding": 231633.66
+            }
+        ]
+      ],
+      "day": "31",
+      "mimetype": "application/json",
+      "month": "12",
+      "status": 200,
+      "year": "2019"
+      }
+     ```
+     
+
 3. What's the total outstanding per team and lane given a date?
-   - TODO
+- The endpoint for the final url is:
+    ```
+     /api/v1/team/current
+    ```
+   - It calculates the remaining Lease per team and lane and returns these values in a nested json. It has no sanity check wheter the calculated value is similar to the given value (for eq in the case of rouding issues)
+   - Example response:
+    
+  ```
+    {
+        "data": {
+            "teams": [
+                [
+                    {
+                        "lanes": [
+                            {
+                                "lane": "beespecial",
+                                "total_outstanding": 115406.3
+                            }
+                        ],
+                        "team": "logistics",
+                        "total_outstanding": 115406.29999999999
+                    }
+                ],
+                [
+                    {
+                        "lanes": [
+                            {
+                                "lane": "beefast",
+                                "total_outstanding": 73119.64
+                            },
+                            {
+                                "lane": "beespecial",
+                                "total_outstanding": 23907.79
+                            }
+                        ],
+                        "team": "yellow",
+                        "total_outstanding": 97027.43
+                    }
+                ]
+            ]
+        },
+        "mimetype": "application/json",
+        "status": 200
+    }
+  ```
+
 4. What's the average outstanding at the start of the lease per team and lane?
-   - TODO
+- The endpoint for the final url is:
+    ```
+     /api/v1/team/start
+    ```
+   - It calculates the average Lease per team and lane at the start when no payments have been received and returns these values in a nested json.
+   - Example response:
+  ```
+    {
+        "data": {
+            "teams": [
+                [
+                    {
+                        "avg_outstanding": 57616.05,
+                        "lanes": [
+                            {
+                                "avg_outstanding": 57616.05,
+                                "lane": "beespecial"
+                            }
+                        ],
+                        "team": "logistics"
+                    }
+                ],
+                [
+                    {
+                        "avg_outstanding": 215243.5475,
+                        "lanes": [
+                            {
+                                "avg_outstanding": 216084.095,
+                                "lane": "beefast"
+                            },
+                            {
+                                "avg_outstanding": 214403,
+                                "lane": "beespecial"
+                            }
+                        ],
+                        "team": "yellow"
+                    }
+                ]
+            ]
+        },
+        "mimetype": "application/json",
+        "status": 200
+    }
+  ```
+
+
 5. What's the total daily outstanding given a year?
    - TODO    
 
