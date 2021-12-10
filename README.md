@@ -49,13 +49,51 @@ The first step was to understand and translate all functional and non functional
    - The function checks the given input on validity, then fetches the first previous data row. It calculates the remaining Lease and returns this value under data and also corrects if the lease has ended and a negative balance remains. It also returns the input, status and mimetype for reference and validation. 
    - Example response:
      ```
-     {"data":[{"outstanding":13326.42}],"day":"31","mimetype":"application/json","month":"12","reference":"BQ2333.20132.01","status":200,"year":"2021"}
+     {
+      "data": [
+        {
+            "outstanding": 13326.42
+        }
+      ],
+      "day": "31",
+      "mimetype": "application/json",
+      "month": "12",
+      "reference": "BQ2333.20132.01",
+      "status": 200,
+      "year": "2021"
+      }
      ```
-
-     
           
 2. What's the total outstanding for a organisation given a Camber of Commerce number and date?
-   - TODO
+   - The endpoint for the final url is:
+     ```
+     /api/v1/organisation/<coc_number>/<year>/<month>/<day>
+     ```
+   - coc_number is the chamber of commerce number
+   - year is the year of the outstanding lease
+   - month is the month of the outstanding lease  
+   - day is the day of the outstanding lease
+   - The function checks the given input on validity, then fetches the first previous data rows for all leases associated with the customer. It calculates the remaining Lease and returns the sum of this value under data and also corrects if the lease has ended and a negative balance remains. It also returns the input, status and mimetype for reference and validation. 
+   - Example response:
+     ```
+     {
+      "coc_number": "68648456",
+      "data": [
+        [
+            {
+                "total_outstanding": 231633.66
+            }
+        ]
+      ],
+      "day": "31",
+      "mimetype": "application/json",
+      "month": "12",
+      "status": 200,
+      "year": "2019"
+      }
+     ```
+     
+
 3. What's the total outstanding per team and lane given a date?
    - TODO
 4. What's the average outstanding at the start of the lease per team and lane?
