@@ -59,9 +59,9 @@ def check_if_input_exists(column,table, value):
     :param table: the table to check
     :param value: the value to check
     """
-    conn = getconnection()
-    cursor = conn.cursor()
     try:
+        conn = getconnection()
+        cursor = conn.cursor()
         cursor.execute("SELECT {0}  FROM {1} WHERE {0} = '{2}' group by 1;".format(column, table, value))
         result = cursor.fetchone()
         if result == None:
@@ -101,11 +101,14 @@ def get_outstanding_lease(reference, year, month, day):
     datestring = check_correct_input_date(year=year,month=month,day=day)
     # check if reference exists
     check_if_input_exists(column='reference', table='lease', value=reference)
-
-    conn = getconnection()
-    cursor = conn.cursor()
     try:
-        cursor.execute("select row_to_json(outst) from ( SELECT CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding from installment where date <= '{0}' AND installment_no in (SELECT installment_no  FROM lease WHERE reference = '{1}') ORDER BY date DESC LIMIT 1) outst;".format(datestring, reference))
+        conn = getconnection()
+        cursor = conn.cursor()
+        cursor.execute("select row_to_json(outst) "
+                       "from ( SELECT CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding "
+                       "from installment where date <= '{0}' "
+                       "AND installment_no in (SELECT installment_no  "
+                       "FROM lease WHERE reference = '{1}') ORDER BY date DESC LIMIT 1) outst;".format(datestring, reference))
         row = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -132,13 +135,17 @@ def get_total_organisational_outstanding_lease(coc_number, year, month, day):
     # check if date exists
     datestring = check_correct_input_date(year=year, month=month, day=day)
     check_if_input_exists(column='coc_number', table='customer', value=coc_number)
-    # get customer
-    conn = getconnection()
-    cursor = conn.cursor()
-    # AND installment_no in (SELECT installment_no  FROM lease WHERE reference = '{1}') ORDER BY date DESC LIMIT 1
     try:
-        cursor.execute("select row_to_json(outst) from (SELECT SUM(outstanding) AS total_outstanding FROM (SELECT CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding from installment where date <= '{0}' AND installment_no in (SELECT installment_no from Lease where customer_id = (Select id from Customer where coc_number = '{1}') group by 1)  ORDER BY date DESC LIMIT 1) total )  outst;".format(datestring, coc_number))
-        row = cursor.fetchall()
+        conn = getconnection()
+        cursor = conn.cursor()
+        cursor.execute("select row_to_json(outst) "
+                       "from (SELECT SUM(outstanding) AS total_outstanding "
+                       "FROM (SELECT CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding "
+                       "from installment where date <= '{0}' "
+                       "AND installment_no in (SELECT installment_no "
+                       "from Lease where customer_id = (Select id from Customer "
+                       "where coc_number = '{1}') group by 1)  ORDER BY date DESC LIMIT 1) total )  outst;".format(datestring, coc_number))
+        row = cursor.fetchone()
         cursor.close()
         conn.close()
         if row == None:
@@ -149,3 +156,37 @@ def get_total_organisational_outstanding_lease(coc_number, year, month, day):
 
     return jsonify(status=200, mimetype='application/json', coc_number=coc_number, year=year, month=month, day=day, data=row)
 
+@app.route("/api/v1/team")
+def get_total_outstanding_per_team_and_lane():
+    """
+    This API is a reference to FR-3: What's the total outstanding per team and lane given a date?
+    I used SQL as much as possible for this case. And not reuse any statement to get data.
+    :return: outstandings per team and lane
+    """
+    try:
+        conn = getconnection()
+        cursor = conn.cursor()
+        cursor.execute(
+                       "SELECT team, SUM(outstanding), (SELECT json_agg(lane_sum) FROM (SELECT team, lane, SUM(outstanding) "
+                       "FROM lease let "
+                       "LEFT JOIN (select ins.installment_no, CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding "
+                       "from installment ins INNER JOIN (SELECT installment_no, max(t) as t "
+                       "FROM installment WHERE date <= '{0}' GROUP BY 1) maxi "
+                       "ON maxi.installment_no = ins.installment_no AND maxi.t=ins.t) outs "
+                       "ON outs.installment_no = let.installment_no where le.team=team GROUP BY 1,2) as lane_sum) AS Lanes "
+                       "FROM lease le "
+                       "LEFT JOIN (select ins.installment_no, CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding "
+                       "from installment ins INNER JOIN (SELECT installment_no, max(t) as t "
+                       "FROM installment WHERE date <= '{0}' GROUP BY 1) maxi "
+                       "ON maxi.installment_no = ins.installment_no AND maxi.t=ins.t) outs "
+                       "ON outs.installment_no = le.installment_no GROUP BY 1 ;".format(datetime.datetime.now()))
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        if rows == None:
+            abort(422, description="installment starts later")
+    except Exception as e:
+        print(e)
+        abort(500, description="Internal Server Error")
+    print(rows)
+    return jsonify(status=200, mimetype='application/json', data={'teams': rows})
