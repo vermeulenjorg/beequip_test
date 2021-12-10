@@ -97,7 +97,7 @@ The first step was to understand and translate all functional and non functional
 3. What's the total outstanding per team and lane given a date?
 - The endpoint for the final url is:
      ```
-     /api/v1/team
+     /api/v1/team/current
      ```
    - It calculates the remaining Lease per team and lane and returns these values in a nested json. It has no sanity check wheter the calculated value is similar to the given value (for eq in the case of rouding issues)
    - Example response:
