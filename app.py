@@ -35,6 +35,27 @@ def internal_server_error(e):
     """
     return jsonify(error=str(e)), 500
 
+def check_correct_input_date(year,month,day):
+    correct_date = False
+    try:
+        datestring = datetime.datetime(year=int(year),month=int(month),day=int(day))
+    except ValueError:
+        abort(422, description="Given Date doesn't Exists")
+    return datestring
+
+
+def check_if_input_exists(column,table, value):
+    conn = getconnection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT {0}  FROM {1} WHERE {0} = '{2}' group by 1;".format(column, table, value))
+        result = cursor.fetchone()
+    except Exception as e:
+        print(e)
+        abort(500, description="Internal Server Error")
+    if result == None:
+        abort(422, description="{0} doesnt exist in table {1}".format(value, column))
+
 
 @app.route("/")
 def health_check():
@@ -45,7 +66,7 @@ def health_check():
 def get_outstanding_lease(reference, year, month, day):
     """
     This API is a reference to FR-1: What's the outstanding for a lease given a reference and date?
-    I used SQL as much as possible for this case. Selects the
+    I used SQL as much as possible for this case.
     :param reference: The lease Reference
     :param year: The Year for the outstanding Lease
     :param month: The Month for the outstanding Lease
@@ -53,20 +74,12 @@ def get_outstanding_lease(reference, year, month, day):
     :return: A JSON reponse containing mimetype, status, given parameters and result in 'data'
     """
     # check if date exists
-    try:
-        datestring = datetime.datetime(year=int(year),month=int(month),day=int(day))
-    except ValueError:
-        abort(422, description="Given Date doesn't Exists")
+    datestring = check_correct_input_date(year=year,month=month,day=day)
+    # check if reference exists
+    check_if_input_exists(column='reference', table='lease', value=reference)
+
     conn = getconnection()
     cursor = conn.cursor()
-    # check if reference exists
-    try:
-        cursor.execute("SELECT installment_no  FROM lease WHERE reference = '{0}' group by 1;".format(reference))
-    except Exception as e:
-        print(e)
-        abort(500, description="Internal Server Error")
-    if cursor.fetchone() == None:
-        abort(422, description="installment_no doesn't Exists")
     try:
         cursor.execute("select row_to_json(outst) from ( SELECT CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding from installment where date <= '{0}' AND installment_no in (SELECT installment_no  FROM lease WHERE reference = '{1}') ORDER BY date DESC LIMIT 1) outst;".format(datestring, reference))
     except Exception as e:
@@ -77,7 +90,36 @@ def get_outstanding_lease(reference, year, month, day):
         abort(422, description="installment starts later")
     cursor.close()
     conn.close()
-    # return jsonify(status=200, mimetype='application/json')
     return jsonify(status=200, mimetype='application/json', reference=reference, year=year, month=month, day=day, data=row)
 
+@app.route("/api/v1/organisation/<coc_number>/<year>/<month>/<day>")
+def get_total_organisational_outstanding_lease(coc_number, year, month, day):
+    """
+    This API is a reference to FR-2: What's the total outstanding for a organisation given a Camber of Commerce number and date?
+    I used SQL as much as possible for this case.
+    :param coc_number: the chamber of commerce number
+    :param year: The Year for the total outstanding Lease
+    :param month: The Month for the total outstanding Lease
+    :param day: The Day for the total outstanding lease
+    :return: A JSON reponse containing mimetype, status, given parameters and result in 'data'
+    """
+    # check if date exists
+    datestring = check_correct_input_date(year=year, month=month, day=day)
+    check_if_input_exists(column='coc_number', table='customer', value=coc_number)
+    # get customer
+    conn = getconnection()
+    cursor = conn.cursor()
+    # AND installment_no in (SELECT installment_no  FROM lease WHERE reference = '{1}') ORDER BY date DESC LIMIT 1
+    try:
+        cursor.execute("select row_to_json(outst) from (SELECT SUM(outstanding) AS total_outstanding FROM (SELECT CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding from installment where date <= '{0}' AND installment_no in (SELECT installment_no from Lease where customer_id = (Select id from Customer where coc_number = '{1}') group by 1)  ORDER BY date DESC LIMIT 1) total )  outst;".format(datestring, coc_number))
+    except Exception as e:
+        print(e)
+        abort(500, description="Internal Server Error")
+    row = cursor.fetchall()
+    print(row)
+    if row == None:
+        abort(422, description="installment starts later")
+    cursor.close()
+    conn.close()
+    return jsonify(status=200, mimetype='application/json', coc_number=coc_number, year=year, month=month, day=day, data=row)
 
