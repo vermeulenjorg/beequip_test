@@ -222,8 +222,17 @@ Of the 5 functional requirements i first created a use case diagram, just to get
     }
   ```   
 
+## Run Application
 
+This application can be run as a 'Normal' Flask application. For more information check out [Flask](https://flask.palletsprojects.com/en/2.0.x/quickstart/)
 
+The data can be loaded to a Postgres database, by altering the parameters in database, by running the python file create.py under create_database. 
+
+## Testing Application
+
+Some basic tests are included under test. The pytest tests can be run with the pytest command see also [Pytest](https://docs.pytest.org/en/latest/how-to/usage.html)
+
+The endpoints also have some basic tests under test/postman this Json can be loaded in [postman](https://www.postman.com/) and be run there. These tests are now linked to the production environnement on Azure 
 
 >## Data engineer test
 >
