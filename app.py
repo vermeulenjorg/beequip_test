@@ -188,16 +188,15 @@ def get_total_outstanding_per_team_and_lane():
     except Exception as e:
         print(e)
         abort(500, description="Internal Server Error")
-    print(rows)
     return jsonify(status=200, mimetype='application/json', data={'teams': rows})
 
 
 @app.route("/api/v1/team/start")
 def get_average_at_start_per_team_and_lane():
     """
-    This API is a reference to FR-3: What's the total outstanding per team and lane given a date?
+    This API is a reference to FR-4: What's the average outstanding per team and lane at the start?
     I used SQL as much as possible for this case. And not reuse any statement to get data.
-    :return: outstandings per team and lane
+    :return: outstandings per team and lane at start
     """
     try:
         conn = getconnection()
@@ -225,5 +224,28 @@ def get_average_at_start_per_team_and_lane():
     except Exception as e:
         print(e)
         abort(500, description="Internal Server Error")
-    print(rows)
     return jsonify(status=200, mimetype='application/json', data={'teams': rows})
+
+
+@app.route("/api/v1/daily/<year>")
+def get_total_daily_outstanding(year):
+    """
+    This API is a reference to FR-5: What's the total outstanding per team and lane given a date?
+    I used SQL as much as possible for this case. And not reuse any statement to get data.
+    :return:
+    """
+    try:
+        conn = getconnection()
+        cursor = conn.cursor()
+        cursor.execute("select row_to_json(outst) from (SELECT generated_days as day, (SELECT SUM(outstanding) FROM (SELECT DISTINCT ON (installment_no) installment_no, CASE WHEN outstanding+principal < 0 THEN 0 ELSE  outstanding+principal  END outstanding "
+                       "FROM  installment  WHERE date <= gd.generated_days "
+                       "ORDER BY installment_no, t desc) AS out) "
+                       "FROM (SELECT generate_series(date '{0}-01-01', date '{0}-12-31', '1 day') as generated_days) gd"
+                       ") outst;".format(year))
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(e)
+        abort(500, description="Internal Server Error")
+    return jsonify(status=200, mimetype='application/json', year=year, data={'days':rows})

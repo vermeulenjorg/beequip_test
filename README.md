@@ -37,8 +37,12 @@ The first step was to understand and translate all functional and non functional
 
 ### Functional requirements
 
+Of the 5 functional requirements i first created a use case diagram, just to get a visual overview of what is asked.
+
+![Use Case Diagram](docs/20211207_Use_Cases.png)    
+
 1. What's the outstanding for a lease given a reference and date?
-   - The endpoint for the final url is:
+   - The endpoint for the  url is:
      ```
      /api/v1/lease/<reference>/<year>/<month>/<day>
      ```
@@ -65,7 +69,7 @@ The first step was to understand and translate all functional and non functional
      ```
           
 2. What's the total outstanding for a organisation given a Camber of Commerce number and date?
-   - The endpoint for the final url is:
+   - The endpoint for the  url is:
      ```
      /api/v1/organisation/<coc_number>/<year>/<month>/<day>
      ```
@@ -95,7 +99,7 @@ The first step was to understand and translate all functional and non functional
      
 
 3. What's the total outstanding per team and lane given a date?
-- The endpoint for the final url is:
+- The endpoint for the  url is:
     ```
      /api/v1/team/current
     ```
@@ -142,7 +146,7 @@ The first step was to understand and translate all functional and non functional
   ```
 
 4. What's the average outstanding at the start of the lease per team and lane?
-- The endpoint for the final url is:
+- The endpoint for the  url is:
     ```
      /api/v1/team/start
     ```
@@ -189,12 +193,46 @@ The first step was to understand and translate all functional and non functional
 
 
 5. What's the total daily outstanding given a year?
-   - TODO    
+- The endpoint for the url is:
+    ```
+     /api/v1/daily/<year>
+    ```
+   - It returns the outstanding Lease per day for the entire year.
+   - Example response:
+  ```
+    {
+        "data": {
+             "days": [
+            [
+                {
+                    "day": "2021-01-01T00:00:00+00:00",
+                    "sum": 344481.74000000005
+                }
+            ],
+            [
+                {
+                    "day": "2021-01-02T00:00:00+00:00",
+                    "sum": 343181.35000000003
+                }
+            ]
+        },
+        "mimetype": "application/json",
+        "status": 200,
+        "year": "2021"
+    }
+  ```   
 
-Of the 5 functional requirements i first created a use case diagram, just to get a visual overview of what is asked.
+## Run Application
 
-![Use Case Diagram](docs/20211207_Use_Cases.png)    
+This application can be run as a 'Normal' Flask application. For more information check out [Flask](https://flask.palletsprojects.com/en/2.0.x/quickstart/)
 
+The data can be loaded to a Postgres database, by altering the parameters in database, by running the python file create.py under create_database. 
+
+## Testing Application
+
+Some basic tests are included under test. The pytest tests can be run with the pytest command see also [Pytest](https://docs.pytest.org/en/latest/how-to/usage.html)
+
+The endpoints also have some basic tests under test/postman this Json can be loaded in [postman](https://www.postman.com/) and be run there. These tests are now linked to the production environnement on Azure 
 
 >## Data engineer test
 >
